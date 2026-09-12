@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background: #090d1a;
+}
+
+body {
+  font-feature-settings: "ss01";
+}
+
+::selection {
+  background: #ffb648;
+  color: #090d1a;
+}
+
+input:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #5fd4d6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* horizontal scroll sections: hide scrollbar but keep function */
+.scroll-quiet {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-quiet::-webkit-scrollbar {
+  display: none;
+}
+
+.shimmer-bg {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.09) 40px,
+    rgba(255, 255, 255, 0.04) 80px
+  );
+  background-size: 600px 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in,
+  .animate-drift,
+  .animate-fall-line,
+  .animate-fall-dot,
+  .animate-shimmer,
+  .animate-pop-in {
+    animation: none !important;
+  }
+}
