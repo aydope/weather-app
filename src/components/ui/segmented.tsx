@@ -13,13 +13,19 @@ interface SegmentedProps {
   fontClass?: string;
 }
 
-export function Segmented({ options, value, onChange, className, fontClass }: SegmentedProps) {
+export function Segmented({
+  options,
+  value,
+  onChange,
+  className,
+  fontClass,
+}: SegmentedProps) {
   return (
     <div
       role="tablist"
       className={cn(
-        "inline-flex items-center rounded-full border border-line bg-white/[0.04] p-1 gap-0.5",
-        className
+        "glass-pill inline-flex h-10 items-center rounded-full p-1 gap-0.5",
+        className,
       )}
     >
       {options.map((opt) => {
@@ -31,9 +37,11 @@ export function Segmented({ options, value, onChange, className, fontClass }: Se
             aria-selected={active}
             onClick={() => onChange(opt.value)}
             className={cn(
-              "relative rounded-full px-3.5 py-1.5 text-sm transition-colors",
+              "h-8 min-w-[2.25rem] sm:min-w-[2.75rem] rounded-full px-2.5 sm:px-3 text-sm transition-colors",
               fontClass,
-              active ? "bg-paper text-ink" : "text-mist hover:text-paper"
+              active
+                ? "bg-gradient-to-b from-gold-soft to-gold-deep text-ink font-semibold shadow-[0_4px_14px_-4px_rgba(217,185,121,0.6)]"
+                : "text-mist hover:text-paper",
             )}
           >
             {opt.label}

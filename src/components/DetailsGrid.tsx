@@ -1,6 +1,15 @@
+import type { ReactNode } from "react";
 import { WindCompass } from "@/components/WindCompass";
 import { UvGauge } from "@/components/UvGauge";
-import { localizeDigits } from "@/lib/format";
+import { Icon, type IconName } from "@/components/ui/icons";
+import { SectionTitle } from "@/components/ui/section-title";
+import {
+  formatPrecip,
+  formatTemp,
+  formatVisibility,
+  localizeDigits,
+} from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { CurrentWeather, DayPoint, Lang, Unit } from "@/types";
 import { t } from "@/i18n";
 
@@ -12,33 +21,143 @@ interface DetailsGridProps {
   today: DayPoint;
 }
 
-export function DetailsGrid({ lang, unit, displayFont, weather, today }: DetailsGridProps) {
+interface DetailCardProps {
+  icon: IconName;
+  label: string;
+  className?: string;
+  children: ReactNode;
+}
+
+function DetailCard({ icon, label, className, children }: DetailCardProps) {
   return (
-    <section className="mt-6 sm:mt-8">
-      <h3 className={`${displayFont} text-lg sm:text-xl font-medium mb-3`}>{t(lang, "detailsTitle")}</h3>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="rounded-2xl border border-line bg-white/[0.035] px-4 sm:px-5 py-4 sm:py-5">
-          <p className="text-mist text-xs sm:text-sm mb-3">{t(lang, "humidity")}</p>
-          <p className={`${displayFont} text-2xl sm:text-3xl`}>{localizeDigits(weather.humidity, lang)}%</p>
-        </div>
+    <div
+      className={cn(
+        "glass glass-hover rounded-3xl p-4 sm:p-5 flex flex-col gap-4",
+        className,
+      )}
+    >
+      <p className="flex items-center gap-2 text-mist text-xs sm:text-sm">
+        <Icon name={icon} className="w-4 h-4 text-gold shrink-0" />
+        {label}
+      </p>
+      <div className="mt-auto">{children}</div>
+    </div>
+  );
+}
 
-        <div className="rounded-2xl border border-line bg-white/[0.035] px-4 sm:px-5 py-4 sm:py-5">
-          <p className="text-mist text-xs sm:text-sm mb-3">{t(lang, "wind")}</p>
-          <WindCompass lang={lang} unit={unit} speed={weather.windSpeed} direction={weather.windDirection} />
-        </div>
+function Meter({ value }: { value: number }) {
+  return (
+    <div className="h-1.5 rounded-full bg-white/10 mt-3">
+      <div
+        className="h-full rounded-full bg-gradient-to-r from-gold-soft to-gold-deep"
+        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+      />
+    </div>
+  );
+}
 
-        <div className="rounded-2xl border border-line bg-white/[0.035] px-4 sm:px-5 py-4 sm:py-5">
-          <p className="text-mist text-xs sm:text-sm mb-3">{t(lang, "uv")}</p>
-          <UvGauge lang={lang} uv={today.uvIndexMax} />
-        </div>
+export function DetailsGrid({
+  lang,
+  unit,
+  displayFont,
+  weather,
+  today,
+}: DetailsGridProps) {
+  const valueClass = `${displayFont} text-xl sm:text-3xl`;
 
-        <div className="rounded-2xl border border-line bg-white/[0.035] px-4 sm:px-5 py-4 sm:py-5">
-          <p className="text-mist text-xs sm:text-sm mb-3">{t(lang, "pressure")}</p>
-          <p className={`${displayFont} text-2xl sm:text-3xl`}>
-            {localizeDigits(weather.pressure, lang)}
-            <span className="text-sm text-mist ms-1">hPa</span>
+  return (
+    <section id="details" className="mt-12 sm:mt-16 scroll-mt-24">
+      <SectionTitle title={t(lang, "detailsTitle")} displayFont={displayFont} />
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 sm:gap-4">
+        <DetailCard
+          icon="wind"
+          label={t(lang, "wind")}
+          className="col-span-2 md:col-span-3"
+        >
+          <WindCompass
+            lang={lang}
+            unit={unit}
+            displayFont={displayFont}
+            speed={weather.windSpeed}
+            direction={weather.windDirection}
+            gusts={weather.windGusts}
+          />
+        </DetailCard>
+
+        <DetailCard
+          icon="sun"
+          label={t(lang, "uv")}
+          className="col-span-2 md:col-span-3"
+        >
+          <UvGauge
+            lang={lang}
+            displayFont={displayFont}
+            uv={today.uvIndexMax}
+          />
+        </DetailCard>
+
+        <DetailCard
+          icon="drop"
+          label={t(lang, "humidity")}
+          className="md:col-span-2"
+        >
+          <p className={valueClass}>
+            {localizeDigits(weather.humidity, lang)}%
           </p>
-        </div>
+          <Meter value={weather.humidity} />
+        </DetailCard>
+
+        <DetailCard
+          icon="gauge"
+          label={t(lang, "pressure")}
+          className="md:col-span-2"
+        >
+          <p className={valueClass}>
+            {localizeDigits(weather.pressure, lang)}
+            <span className="text-sm text-mist ms-1 font-body">hPa</span>
+          </p>
+        </DetailCard>
+
+        <DetailCard
+          icon="eye"
+          label={t(lang, "visibility")}
+          className="md:col-span-2"
+        >
+          <p className={valueClass}>
+            {formatVisibility(weather.visibility, unit, lang)}
+          </p>
+        </DetailCard>
+
+        <DetailCard
+          icon="cloud"
+          label={t(lang, "cloudCover")}
+          className="md:col-span-2"
+        >
+          <p className={valueClass}>
+            {localizeDigits(weather.cloudCover, lang)}%
+          </p>
+          <Meter value={weather.cloudCover} />
+        </DetailCard>
+
+        <DetailCard
+          icon="thermometer"
+          label={t(lang, "dewPoint")}
+          className="md:col-span-2"
+        >
+          <p className={valueClass}>
+            {formatTemp(weather.dewPoint, unit, lang)}
+          </p>
+        </DetailCard>
+
+        <DetailCard
+          icon="umbrella"
+          label={t(lang, "precipitation")}
+          className="md:col-span-2"
+        >
+          <p className={valueClass}>
+            {formatPrecip(today.precipSum, unit, lang)}
+          </p>
+        </DetailCard>
       </div>
     </section>
   );

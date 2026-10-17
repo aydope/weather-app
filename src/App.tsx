@@ -1,31 +1,51 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/Header";
+import { Header, type NavSection } from "@/components/Header";
+import { MobileNav } from "@/components/MobileNav";
+import { Footer } from "@/components/Footer";
 import { SearchCommand } from "@/components/SearchCommand";
+import { EmptyState } from "@/components/EmptyState";
 import { Hero } from "@/components/Hero";
+import { Briefing } from "@/components/Briefing";
 import { HourlyStrip } from "@/components/HourlyStrip";
 import { DailyForecast } from "@/components/DailyForecast";
+import { AirQuality } from "@/components/AirQuality";
 import { DetailsGrid } from "@/components/DetailsGrid";
+import { SunMoon } from "@/components/SunMoon";
+import { AmbientOrbs } from "@/components/AmbientOrbs";
 import { ParticleLayer } from "@/components/ParticleLayer";
-import { HeroSkeleton, StripSkeleton, ListSkeleton, GridSkeleton } from "@/components/Skeletons";
+import {
+  HeroSkeleton,
+  StripSkeleton,
+  ListSkeleton,
+  GridSkeleton,
+} from "@/components/Skeletons";
 import { useLocalStorage } from "@/lib/useLocalStorage";
+import { useActiveSection } from "@/lib/useActiveSection";
 import { searchCities, fetchWeatherBundle } from "@/api/weather";
+import { CURRENT_LOCATION_ID } from "@/lib/config";
+import { buildInsights } from "@/lib/insights";
 import { skyGradient, weatherMeta } from "@/lib/weatherMeta";
 import type { GeoResult, Lang, Status, Unit, WeatherBundle } from "@/types";
 import { t } from "@/i18n";
 
-const MAX_RECENT = 6;
+const MAX_RECENT = 8;
 
 export default function App() {
   const [lang, setLang] = useLocalStorage<Lang>("aftab:lang", "fa");
   const [unit, setUnit] = useLocalStorage<Unit>("aftab:unit", "metric");
   const [recent, setRecent] = useLocalStorage<GeoResult[]>("aftab:recent", []);
+  const [favorites, setFavorites] = useLocalStorage<GeoResult[]>(
+    "aftab:favorites",
+    [],
+  );
 
   const [city, setCity] = useState<GeoResult | null>(null);
   const [bundle, setBundle] = useState<WeatherBundle | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errorKey, setErrorKey] = useState("errorGeneric");
   const [lastQuery, setLastQuery] = useState<string | null>(null);
+  const restoredLastCity = useRef(false);
 
   useEffect(() => {
     document.documentElement.lang = lang === "fa" ? "fa" : "en";
@@ -39,7 +59,7 @@ export default function App() {
         return [selected, ...withoutDup].slice(0, MAX_RECENT);
       });
     },
-    [setRecent]
+    [setRecent],
   );
 
   const loadWeatherFor = useCallback(
@@ -47,24 +67,33 @@ export default function App() {
       setCity(selected);
       setStatus("loading");
       try {
-        const data = await fetchWeatherBundle(selected.latitude, selected.longitude);
+        const data = await fetchWeatherBundle(
+          selected.latitude,
+          selected.longitude,
+        );
         setBundle(data);
         setStatus("success");
-        rememberCity(selected);
+        if (selected.id !== CURRENT_LOCATION_ID) rememberCity(selected);
       } catch {
         setErrorKey("errorGeneric");
         setStatus("error");
       }
     },
-    [rememberCity]
+    [rememberCity],
   );
+
+  useEffect(() => {
+    if (restoredLastCity.current) return;
+    restoredLastCity.current = true;
+    if (recent[0]) void loadWeatherFor(recent[0]);
+  }, [recent, loadWeatherFor]);
 
   const handleManualSearch = useCallback(
     async (query: string) => {
       setLastQuery(query);
       setStatus("loading");
       try {
-        const results = await searchCities(query);
+        const results = await searchCities(query, lang);
         if (results.length === 0) {
           setErrorKey("errorNotFound");
           setStatus("error");
@@ -76,52 +105,142 @@ export default function App() {
         setStatus("error");
       }
     },
-    [loadWeatherFor]
+    [lang, loadWeatherFor],
   );
 
+  const handleLocate = useCallback(() => {
+    setLastQuery(null);
+    if (!navigator.geolocation) {
+      setErrorKey("errorLocation");
+      setStatus("error");
+      return;
+    }
+    setStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        void loadWeatherFor({
+          id: CURRENT_LOCATION_ID,
+          name: t(lang, "myLocation"),
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }),
+      () => {
+        setErrorKey("errorLocation");
+        setStatus("error");
+      },
+      { timeout: 10000 },
+    );
+  }, [lang, loadWeatherFor]);
+
+  const toggleFavorite = useCallback(
+    (target: GeoResult) => {
+      setFavorites((prev) =>
+        prev.some((c) => c.id === target.id)
+          ? prev.filter((c) => c.id !== target.id)
+          : [target, ...prev],
+      );
+    },
+    [setFavorites],
+  );
+
+  const refresh = () => {
+    if (city) void loadWeatherFor(city);
+  };
+
   const retry = () => {
-    if (lastQuery) handleManualSearch(lastQuery);
-    else if (city) loadWeatherFor(city);
+    if (errorKey === "errorLocation") handleLocate();
+    else if (lastQuery) void handleManualSearch(lastQuery);
+    else if (city) void loadWeatherFor(city);
   };
 
   const meta = bundle ? weatherMeta(bundle.current.weatherCode, lang) : null;
   const gradient = bundle
     ? skyGradient(meta!.group, bundle.current.isDay)
-    : "from-[#0C1122] via-[#141F3C] to-[#1F2E52]";
+    : "from-[#0A0D18] via-[#10172C] to-[#1B1830]";
 
   const fontClass = lang === "fa" ? "font-fa" : "font-body";
   const displayFont = lang === "fa" ? "font-fa" : "font-display";
 
+  const sections: NavSection[] =
+    status === "success" && bundle
+      ? [
+          {
+            id: "overview",
+            labelKey: "navOverview",
+            shortKey: "navShortOverview",
+          },
+          { id: "hourly", labelKey: "navHourly", shortKey: "navShortHourly" },
+          {
+            id: "forecast",
+            labelKey: "navForecast",
+            shortKey: "navShortForecast",
+          },
+          ...(bundle.air
+            ? [{ id: "air", labelKey: "navAir", shortKey: "navShortAir" }]
+            : []),
+          {
+            id: "details",
+            labelKey: "navDetails",
+            shortKey: "navShortDetails",
+          },
+          { id: "sun", labelKey: "navSun", shortKey: "navShortSun" },
+        ]
+      : [];
+
+  const activeSection = useActiveSection(sections.map((s) => s.id));
+
+  const stagger = (index: number) => ({ animationDelay: `${index * 80}ms` });
+
   return (
-    <div className={`min-h-screen bg-ink ${fontClass} text-paper relative overflow-hidden`}>
-      {/* ambient backdrop */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90 transition-all duration-700`} />
-      <ParticleLayer group={meta?.group ?? "clear"} />
-
-      <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-14">
-        <Header
-          lang={lang}
-          unit={unit}
-          fontClass={fontClass}
-          displayFont={displayFont}
-          onLangChange={setLang}
-          onUnitChange={setUnit}
+    <div
+      className={`min-h-screen ${fontClass} text-paper relative overflow-x-clip`}
+    >
+      <div
+        aria-hidden
+        className="fixed inset-0 overflow-hidden bg-ink pointer-events-none"
+      >
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-all duration-700`}
         />
+        <AmbientOrbs
+          group={meta?.group ?? "idle"}
+          isDay={bundle?.current.isDay ?? true}
+        />
+        <ParticleLayer group={meta?.group ?? "clear"} />
+        <div className="vignette absolute inset-0" />
+        <div className="grain absolute inset-0" />
+      </div>
 
+      <Header
+        lang={lang}
+        unit={unit}
+        fontClass={fontClass}
+        displayFont={displayFont}
+        sections={sections}
+        active={activeSection}
+        onLangChange={setLang}
+        onUnitChange={setUnit}
+      />
+
+      <main className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 pt-8 sm:pt-12">
         <SearchCommand
           lang={lang}
           fontClass={fontClass}
           recent={recent}
+          favorites={favorites}
           activeCityId={city?.id}
           onSelectCity={loadWeatherFor}
           onManualSearch={handleManualSearch}
+          onLocate={handleLocate}
         />
 
         {status === "idle" && (
-          <div className="rounded-[28px] border border-line bg-white/[0.035] px-6 py-14 text-center animate-rise-in">
-            <p className={`${displayFont} text-lg sm:text-xl mb-2`}>{t(lang, "emptyTitle")}</p>
-            <p className="text-mist text-sm sm:text-base">{t(lang, "emptyBody")}</p>
-          </div>
+          <EmptyState
+            lang={lang}
+            displayFont={displayFont}
+            onPick={handleManualSearch}
+            onLocate={handleLocate}
+          />
         )}
 
         {status === "loading" && (
@@ -134,8 +253,8 @@ export default function App() {
         )}
 
         {status === "error" && (
-          <div className="rounded-[28px] border border-coral/40 bg-coral/[0.07] px-6 py-10 text-center animate-rise-in">
-            <p className="text-paper mb-4">{t(lang, errorKey)}</p>
+          <div className="glass glass-danger rounded-[32px] px-6 py-10 text-center animate-rise-in">
+            <p className="text-paper mb-5">{t(lang, errorKey)}</p>
             <Button variant="destructive" size="sm" onClick={retry}>
               {t(lang, "retry")}
             </Button>
@@ -143,30 +262,81 @@ export default function App() {
         )}
 
         {status === "success" && bundle && city && (
-          <div className="animate-rise-in">
-            <Hero
-              lang={lang}
-              unit={unit}
-              displayFont={displayFont}
-              city={city}
-              weather={bundle.current}
-              today={bundle.daily[0]}
-              tomorrow={bundle.daily[1]}
-            />
-            <HourlyStrip lang={lang} unit={unit} displayFont={displayFont} hours={bundle.hourly} />
-            <DailyForecast lang={lang} unit={unit} displayFont={displayFont} days={bundle.daily} />
-            <DetailsGrid
-              lang={lang}
-              unit={unit}
-              displayFont={displayFont}
-              weather={bundle.current}
-              today={bundle.daily[0]}
-            />
-          </div>
+          <>
+            <div className="animate-rise-in">
+              <Hero
+                lang={lang}
+                unit={unit}
+                displayFont={displayFont}
+                city={city}
+                weather={bundle.current}
+                today={bundle.daily[0]}
+                isFavorite={favorites.some((c) => c.id === city.id)}
+                onToggleFavorite={() => toggleFavorite(city)}
+                onRefresh={refresh}
+              />
+            </div>
+            <div className="animate-rise-in" style={stagger(1)}>
+              <Briefing
+                lang={lang}
+                displayFont={displayFont}
+                insights={buildInsights(
+                  bundle.current,
+                  bundle.daily[0],
+                  bundle.hourly,
+                  bundle.air,
+                )}
+              />
+            </div>
+            <div className="animate-rise-in" style={stagger(2)}>
+              <HourlyStrip
+                lang={lang}
+                unit={unit}
+                displayFont={displayFont}
+                hours={bundle.hourly}
+              />
+            </div>
+            <div className="animate-rise-in" style={stagger(3)}>
+              <DailyForecast
+                lang={lang}
+                unit={unit}
+                displayFont={displayFont}
+                days={bundle.daily}
+              />
+            </div>
+            {bundle.air && (
+              <div className="animate-rise-in" style={stagger(4)}>
+                <AirQuality
+                  lang={lang}
+                  displayFont={displayFont}
+                  air={bundle.air}
+                />
+              </div>
+            )}
+            <div className="animate-rise-in" style={stagger(5)}>
+              <DetailsGrid
+                lang={lang}
+                unit={unit}
+                displayFont={displayFont}
+                weather={bundle.current}
+                today={bundle.daily[0]}
+              />
+            </div>
+            <div className="animate-rise-in" style={stagger(6)}>
+              <SunMoon
+                lang={lang}
+                displayFont={displayFont}
+                weather={bundle.current}
+                today={bundle.daily[0]}
+                tomorrow={bundle.daily[1]}
+              />
+            </div>
+          </>
         )}
+      </main>
 
-        <footer className="mt-10 sm:mt-14 text-center text-xs text-mist">{t(lang, "footerNote")}</footer>
-      </div>
+      <Footer lang={lang} displayFont={displayFont} />
+      <MobileNav lang={lang} sections={sections} active={activeSection} />
     </div>
   );
 }

@@ -17,6 +17,10 @@ export interface CurrentWeather {
   windSpeed: number;
   windDirection: number;
   pressure: number;
+  windGusts: number;
+  visibility: number;
+  cloudCover: number;
+  dewPoint: number;
   weatherCode: number;
   isDay: boolean;
   time: string;
@@ -28,6 +32,7 @@ export interface HourPoint {
   weatherCode: number;
   isDay: boolean;
   uvIndex: number;
+  precipProbability: number;
 }
 
 export interface DayPoint {
@@ -38,12 +43,25 @@ export interface DayPoint {
   sunrise: string;
   sunset: string;
   uvIndexMax: number;
+  precipSum: number;
+  precipProbabilityMax: number;
+}
+
+export interface AirQuality {
+  usAqi: number;
+  pm25: number | null;
+  pm10: number | null;
+  no2: number | null;
+  o3: number | null;
+  so2: number | null;
+  co: number | null;
 }
 
 export interface WeatherBundle {
   current: CurrentWeather;
   hourly: HourPoint[];
   daily: DayPoint[];
+  air: AirQuality | null;
 }
 
 export type Status = "idle" | "loading" | "error" | "success";

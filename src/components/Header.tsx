@@ -1,54 +1,133 @@
 import { Segmented } from "@/components/ui/segmented";
+import { cn } from "@/lib/utils";
 import type { Lang, Unit } from "@/types";
 import { t } from "@/i18n";
+
+export interface NavSection {
+  id: string;
+  labelKey: string;
+  shortKey: string;
+}
 
 interface HeaderProps {
   lang: Lang;
   unit: Unit;
   fontClass: string;
   displayFont: string;
+  sections: NavSection[];
+  active: string;
   onLangChange: (lang: Lang) => void;
   onUnitChange: (unit: Unit) => void;
 }
 
-export function Header({ lang, unit, fontClass, displayFont, onLangChange, onUnitChange }: HeaderProps) {
+export function Header({
+  lang,
+  unit,
+  fontClass,
+  displayFont,
+  sections,
+  active,
+  onLangChange,
+  onUnitChange,
+}: HeaderProps) {
   return (
-    <header className="flex flex-wrap items-start justify-between gap-4 mb-8 sm:mb-12">
-      <div className="flex items-center gap-3">
-        <svg viewBox="0 0 40 40" className="w-9 h-9 sm:w-10 sm:h-10 shrink-0">
-          <circle cx="20" cy="20" r="8" fill="#FFB648" />
-          {Array.from({ length: 8 }).map((_, i) => {
-            const a = (i * Math.PI) / 4;
-            const x1 = 20 + Math.cos(a) * 13, y1 = 20 + Math.sin(a) * 13;
-            const x2 = 20 + Math.cos(a) * 17, y2 = 20 + Math.sin(a) * 17;
-            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FFB648" strokeWidth="2" strokeLinecap="round" opacity="0.85" />;
-          })}
-        </svg>
-        <div>
-          <p className={`${displayFont} text-lg sm:text-xl font-medium leading-tight`}>{t(lang, "brand")}</p>
-          <p className="text-mist text-xs sm:text-sm">{t(lang, "tagline")}</p>
-        </div>
-      </div>
+    <header className="sticky top-0 z-30 border-b border-gold/15 bg-ink/50 backdrop-blur-xl">
+      <div className="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
+        <a
+          href="#overview"
+          className="flex items-center gap-3 shrink-0"
+          aria-label={t(lang, "brand")}
+        >
+          <svg viewBox="0 0 40 40" className="w-9 h-9 shrink-0">
+            <defs>
+              <linearGradient id="brandGold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#F3E3B8" />
+                <stop offset="1" stopColor="#A8863F" />
+              </linearGradient>
+            </defs>
+            <circle
+              cx="20"
+              cy="20"
+              r="18.5"
+              fill="none"
+              stroke="url(#brandGold)"
+              strokeWidth="1"
+            />
+            <circle cx="20" cy="20" r="5.5" fill="url(#brandGold)" />
+            {Array.from({ length: 8 }).map((_, i) => {
+              const a = (i * Math.PI) / 4;
+              return (
+                <line
+                  key={i}
+                  x1={20 + Math.cos(a) * 10}
+                  y1={20 + Math.sin(a) * 10}
+                  x2={20 + Math.cos(a) * 13.5}
+                  y2={20 + Math.sin(a) * 13.5}
+                  stroke="url(#brandGold)"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+              );
+            })}
+          </svg>
+          <div className="leading-tight hidden min-[400px]:block">
+            <p
+              className={cn(
+                displayFont,
+                "text-xl font-semibold",
+                lang === "en" && "uppercase tracking-[0.22em]",
+              )}
+            >
+              {t(lang, "brand")}
+            </p>
+            <p className="hidden sm:block text-mist text-xs">
+              {t(lang, "tagline")}
+            </p>
+          </div>
+        </a>
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        <Segmented
-          fontClass={fontClass}
-          value={unit}
-          onChange={(v) => onUnitChange(v as Unit)}
-          options={[
-            { value: "metric", label: "°C" },
-            { value: "imperial", label: "°F" },
-          ]}
-        />
-        <Segmented
-          fontClass={fontClass}
-          value={lang}
-          onChange={(v) => onLangChange(v as Lang)}
-          options={[
-            { value: "fa", label: "فا" },
-            { value: "en", label: "EN" },
-          ]}
-        />
+        {sections.length > 0 && (
+          <nav
+            aria-label={t(lang, "navLabel")}
+            className="hidden lg:flex items-center gap-1"
+          >
+            {sections.map((s) => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[13px] transition-colors",
+                  active === s.id
+                    ? "bg-gold/15 text-gold-soft"
+                    : "text-mist hover:text-paper",
+                )}
+              >
+                {t(lang, s.labelKey)}
+              </a>
+            ))}
+          </nav>
+        )}
+
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <Segmented
+            fontClass={fontClass}
+            value={unit}
+            onChange={(v) => onUnitChange(v as Unit)}
+            options={[
+              { value: "metric", label: "°C" },
+              { value: "imperial", label: "°F" },
+            ]}
+          />
+          <Segmented
+            fontClass={fontClass}
+            value={lang}
+            onChange={(v) => onLangChange(v as Lang)}
+            options={[
+              { value: "fa", label: "فا" },
+              { value: "en", label: "EN" },
+            ]}
+          />
+        </div>
       </div>
     </header>
   );

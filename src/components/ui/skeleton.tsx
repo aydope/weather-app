@@ -4,8 +4,8 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "rounded-xl bg-white/[0.06] shimmer-bg animate-shimmer",
-        className
+        "rounded-2xl bg-white/[0.05] border border-white/[0.06] shimmer-bg animate-shimmer",
+        className,
       )}
     />
   );

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
+import { Icon } from "@/components/ui/icons";
 import { searchCities } from "@/api/weather";
+import { cn } from "@/lib/utils";
 import type { GeoResult, Lang } from "@/types";
 import { t } from "@/i18n";
 
@@ -10,24 +11,30 @@ interface SearchCommandProps {
   lang: Lang;
   fontClass: string;
   recent: GeoResult[];
+  favorites: GeoResult[];
   activeCityId?: number;
   onSelectCity: (city: GeoResult) => void;
   onManualSearch: (query: string) => void;
+  onLocate: () => void;
 }
 
 export function SearchCommand({
   lang,
   fontClass,
   recent,
+  favorites,
   activeCityId,
   onSelectCity,
   onManualSearch,
+  onLocate,
 }: SearchCommandProps) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<GeoResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlighted, setHighlighted] = useState(-1);
   const debounceRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -37,8 +44,9 @@ export function SearchCommand({
     }
     debounceRef.current = window.setTimeout(async () => {
       try {
-        const results = await searchCities(query.trim());
+        const results = await searchCities(query.trim(), lang);
         setSuggestions(results);
+        setHighlighted(-1);
       } catch {
         setSuggestions([]);
       }
@@ -46,11 +54,14 @@ export function SearchCommand({
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
-  }, [query]);
+  }, [query, lang]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setShowSuggestions(false);
       }
     }
@@ -58,10 +69,25 @@ export function SearchCommand({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    function focusOnSlash(e: KeyboardEvent) {
+      const el = document.activeElement;
+      const typing =
+        el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+      if (e.key === "/" && !typing) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", focusOnSlash);
+    return () => window.removeEventListener("keydown", focusOnSlash);
+  }, []);
+
   const handleSelect = (city: GeoResult) => {
     setShowSuggestions(false);
     setQuery("");
     setSuggestions([]);
+    setHighlighted(-1);
     onSelectCity(city);
   };
 
@@ -71,59 +97,166 @@ export function SearchCommand({
     onManualSearch(query.trim());
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setShowSuggestions(true);
+      setHighlighted((h) => Math.min(h + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlighted((h) => Math.max(h - 1, 0));
+    } else if (e.key === "Enter") {
+      if (showSuggestions && highlighted >= 0 && suggestions[highlighted])
+        handleSelect(suggestions[highlighted]);
+      else handleSubmit();
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+    }
+  };
+
+  const favoriteIds = new Set(favorites.map((c) => c.id));
+  const recentOnly = recent.filter((c) => !favoriteIds.has(c.id));
+
   return (
-    <div ref={containerRef} className="mb-6 sm:mb-8">
+    <div ref={containerRef} className="mb-8 sm:mb-10">
       <div className="relative">
-        <div className="flex gap-2 sm:gap-3">
-          <div className="relative flex-1">
-            <Input
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setShowSuggestions(true);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSubmit();
-                if (e.key === "Escape") setShowSuggestions(false);
-              }}
-              placeholder={t(lang, "searchPlaceholder")}
-              aria-label={t(lang, "searchAria")}
-              className={fontClass}
-            />
-            {showSuggestions && suggestions.length > 0 && (
-              <ul className="absolute mt-2 w-full rounded-2xl bg-ink-raised/95 border border-line backdrop-blur-md overflow-hidden shadow-2xl z-20 animate-pop-in">
-                {suggestions.map((s) => (
-                  <li key={s.id}>
-                    <button
-                      onClick={() => handleSelect(s)}
-                      className="w-full text-start px-5 py-3 hover:bg-white/[0.07] transition-colors flex items-baseline justify-between gap-3"
-                    >
-                      <span className="text-paper">{s.name}</span>
-                      <span className="text-mist text-xs">
-                        {[s.admin1, s.country].filter(Boolean).join(", ")}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+        <div className="glass-input flex h-14 items-center gap-1.5 rounded-full ps-4 pe-1.5 sm:ps-5 sm:gap-2">
+          <Icon
+            name="search"
+            className="hidden sm:block w-5 h-5 shrink-0 text-gold"
+          />
+          <input
+            ref={inputRef}
+            type="text"
+            role="combobox"
+            aria-expanded={showSuggestions && suggestions.length > 0}
+            aria-controls="city-suggestions"
+            aria-autocomplete="list"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            placeholder={t(lang, "searchPlaceholder")}
+            aria-label={t(lang, "searchAria")}
+            className={cn(
+              fontClass,
+              "h-full min-w-0 flex-1 border-0 bg-transparent text-paper placeholder:text-mist/70 outline-none",
             )}
-          </div>
-          <Button onClick={handleSubmit} className="shrink-0">
-            {t(lang, "searchButton")}
+          />
+
+          {query ? (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setSuggestions([]);
+                inputRef.current?.focus();
+              }}
+              aria-label={t(lang, "clearSearch")}
+              title={t(lang, "clearSearch")}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-mist transition-colors hover:bg-white/10 hover:text-paper"
+            >
+              <Icon name="close" className="w-4 h-4" />
+            </button>
+          ) : (
+            <kbd className="hidden md:grid h-6 w-6 shrink-0 place-items-center rounded-md border border-white/15 bg-white/5 text-xs text-mist">
+              /
+            </kbd>
+          )}
+
+          <button
+            type="button"
+            onClick={onLocate}
+            aria-label={t(lang, "locate")}
+            title={t(lang, "locate")}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-gold transition-colors hover:bg-gold/15"
+          >
+            <Icon name="locate" className="w-5 h-5" />
+          </button>
+          <span className="h-6 w-px shrink-0 bg-white/15" />
+          <Button
+            onClick={handleSubmit}
+            aria-label={t(lang, "searchButton")}
+            className="h-11 w-11 shrink-0 rounded-full px-0 sm:w-auto sm:px-6"
+          >
+            <Icon name="search" className="w-5 h-5 sm:hidden" />
+            <span className="hidden sm:inline">{t(lang, "searchButton")}</span>
           </Button>
         </div>
+
+        {showSuggestions && suggestions.length > 0 && (
+          <ul
+            id="city-suggestions"
+            role="listbox"
+            className="glass-menu absolute mt-2 w-full rounded-3xl overflow-hidden z-20 animate-pop-in p-1.5"
+          >
+            {suggestions.map((s, i) => (
+              <li key={s.id} role="option" aria-selected={i === highlighted}>
+                <button
+                  onClick={() => handleSelect(s)}
+                  onMouseEnter={() => setHighlighted(i)}
+                  className={cn(
+                    "w-full text-start px-4 py-3 rounded-2xl transition-colors flex items-center justify-between gap-3",
+                    i === highlighted ? "bg-gold/15" : "hover:bg-white/10",
+                  )}
+                >
+                  <span className="flex items-center gap-3 min-w-0">
+                    <Icon name="pin" className="w-4 h-4 shrink-0 text-gold" />
+                    <span className="text-paper truncate">{s.name}</span>
+                  </span>
+                  <span className="text-mist text-xs truncate">
+                    {[s.admin1, s.country].filter(Boolean).join(", ")}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {recent.length > 0 && (
-        <div className="flex items-center gap-2 mt-3 overflow-x-auto scroll-quiet pb-1">
-          <span className="text-xs text-mist shrink-0">{t(lang, "recentLabel")}</span>
-          {recent.map((c) => (
-            <Chip key={c.id} active={c.id === activeCityId} onClick={() => onSelectCity(c)}>
-              {c.name}
-            </Chip>
-          ))}
+      {(favorites.length > 0 || recentOnly.length > 0) && (
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          {favorites.length > 0 && (
+            <>
+              <span className="text-xs text-mist me-1">
+                {t(lang, "savedLabel")}
+              </span>
+              {favorites.map((c) => (
+                <Chip
+                  key={c.id}
+                  active={c.id === activeCityId}
+                  onClick={() => onSelectCity(c)}
+                >
+                  <Icon name="star" filled className="w-3.5 h-3.5 text-gold" />
+                  {c.name}
+                </Chip>
+              ))}
+            </>
+          )}
+          {recentOnly.length > 0 && (
+            <>
+              <span
+                className={cn(
+                  "text-xs text-mist me-1",
+                  favorites.length > 0 && "ms-3",
+                )}
+              >
+                {t(lang, "recentLabel")}
+              </span>
+              {recentOnly.map((c) => (
+                <Chip
+                  key={c.id}
+                  active={c.id === activeCityId}
+                  onClick={() => onSelectCity(c)}
+                >
+                  {c.name}
+                </Chip>
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>

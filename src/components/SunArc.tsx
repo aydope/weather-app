@@ -50,7 +50,7 @@ export function SunArc({
   const cy = 90;
   const r = 72;
   const marker = pointOnArc(fraction, cx, cy, r);
-  const accent = isDay ? "#FFB648" : "#9C8CF5";
+  const accent = isDay ? "#E8B65E" : "#A79BE0";
 
   return (
     <div className="flex flex-col items-center">
@@ -70,7 +70,13 @@ export function SunArc({
           strokeLinecap="round"
         />
         <circle cx={marker.x} cy={marker.y} r="6" fill={accent} />
-        <circle cx={marker.x} cy={marker.y} r="10" fill={accent} opacity="0.25" />
+        <circle
+          cx={marker.x}
+          cy={marker.y}
+          r="10"
+          fill={accent}
+          opacity="0.25"
+        />
       </svg>
       <div className="flex justify-between w-full max-w-[220px] -mt-1 text-xs text-mist">
         <div className="flex flex-col items-start">

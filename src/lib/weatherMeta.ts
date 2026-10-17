@@ -27,7 +27,11 @@ const codeMap: Record<string, CodeEntry> = {
   "82": { fa: "رگبار شدید", en: "Violent showers", group: "rain" },
   "95": { fa: "رعد و برق", en: "Thunderstorm", group: "storm" },
   "96": { fa: "رعد و برق با تگرگ", en: "Thunderstorm, hail", group: "storm" },
-  "99": { fa: "رعد و برق شدید با تگرگ", en: "Severe thunderstorm", group: "storm" },
+  "99": {
+    fa: "رعد و برق شدید با تگرگ",
+    en: "Severe thunderstorm",
+    group: "storm",
+  },
 };
 
 export function weatherMeta(code: number, lang: Lang) {
@@ -40,22 +44,22 @@ export function weatherMeta(code: number, lang: Lang) {
 }
 
 export function skyGradient(group: string, isDay: boolean): string {
-  if (!isDay) return "from-[#070A16] via-[#0F1530] to-[#1B2148]";
+  if (!isDay) return "from-[#05060B] via-[#0A0D1C] to-[#141230]";
   switch (group) {
     case "clear":
-      return "from-[#132A4A] via-[#1F4470] to-[#FFB648]/25";
+      return "from-[#0B1424] via-[#13294A] to-[#3D2D14]/70";
     case "cloud":
-      return "from-[#111830] via-[#1B2544] to-[#2E3B66]";
+      return "from-[#0B1020] via-[#141C38] to-[#232C50]";
     case "rain":
-      return "from-[#0C1122] via-[#141F3C] to-[#1F2E52]";
+      return "from-[#070B16] via-[#0D1630] to-[#142446]";
     case "snow":
-      return "from-[#1A2643] via-[#243459] to-[#A9BEE0]/30";
+      return "from-[#0E1628] via-[#18253F] to-[#42536F]/60";
     case "storm":
-      return "from-[#0A0D1C] via-[#161832] to-[#241C48]";
+      return "from-[#06070F] via-[#0F1026] to-[#1C1438]";
     case "fog":
-      return "from-[#1A2032] via-[#232A42] to-[#2E3450]";
+      return "from-[#0F131F] via-[#171C2C] to-[#252B3F]";
     default:
-      return "from-[#0C1122] via-[#141F3C] to-[#1F2E52]";
+      return "from-[#0B1020] via-[#141C38] to-[#232C50]";
   }
 }
 

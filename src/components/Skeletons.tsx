@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function HeroSkeleton() {
   return (
-    <div className="rounded-[28px] border border-line bg-white/[0.035] px-6 sm:px-10 py-8 sm:py-12 grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-8 items-center">
+    <div className="glass rounded-[32px] px-6 sm:px-10 py-8 sm:py-12 grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-8 items-center">
       <div>
         <Skeleton className="h-4 w-32 mb-3" />
         <Skeleton className="h-8 w-48 mb-6" />
