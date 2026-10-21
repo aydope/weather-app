@@ -26,13 +26,7 @@ export function UvGauge({ lang, displayFont, uv }: UvGaugeProps) {
   return (
     <div className="flex items-center gap-4">
       <svg viewBox="0 0 64 40" className="w-16 h-10 shrink-0">
-        <path
-          d={`M 6 34 A ${r} ${r} 0 0 1 58 34`}
-          stroke="rgba(236,216,172,0.18)"
-          strokeWidth="5"
-          fill="none"
-          strokeLinecap="round"
-        />
+        <path d={`M 6 34 A ${r} ${r} 0 0 1 58 34`} stroke="rgba(236,216,172,0.18)" strokeWidth="5" fill="none" strokeLinecap="round" />
         <path
           d={`M 6 34 A ${r} ${r} 0 0 1 58 34`}
           stroke={color}
@@ -43,9 +37,7 @@ export function UvGauge({ lang, displayFont, uv }: UvGaugeProps) {
         />
       </svg>
       <div>
-        <p className={`${displayFont} text-2xl sm:text-3xl`}>
-          {localizeDigits(Math.round(uv), lang)}
-        </p>
+        <p className={`${displayFont} text-2xl sm:text-3xl`}>{localizeDigits(Math.round(uv), lang)}</p>
         <p className="text-xs mt-1" style={{ color }}>
           {uvLabel(uv, lang)}
         </p>

@@ -14,12 +14,7 @@ import { DetailsGrid } from "@/components/DetailsGrid";
 import { SunMoon } from "@/components/SunMoon";
 import { AmbientOrbs } from "@/components/AmbientOrbs";
 import { ParticleLayer } from "@/components/ParticleLayer";
-import {
-  HeroSkeleton,
-  StripSkeleton,
-  ListSkeleton,
-  GridSkeleton,
-} from "@/components/Skeletons";
+import { HeroSkeleton, StripSkeleton, ListSkeleton, GridSkeleton } from "@/components/Skeletons";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { useActiveSection } from "@/lib/useActiveSection";
 import { searchCities, fetchWeatherBundle } from "@/api/weather";
@@ -35,16 +30,15 @@ export default function App() {
   const [lang, setLang] = useLocalStorage<Lang>("aftab:lang", "fa");
   const [unit, setUnit] = useLocalStorage<Unit>("aftab:unit", "metric");
   const [recent, setRecent] = useLocalStorage<GeoResult[]>("aftab:recent", []);
-  const [favorites, setFavorites] = useLocalStorage<GeoResult[]>(
-    "aftab:favorites",
-    [],
-  );
+  const [favorites, setFavorites] = useLocalStorage<GeoResult[]>("aftab:favorites", []);
 
   const [city, setCity] = useState<GeoResult | null>(null);
   const [bundle, setBundle] = useState<WeatherBundle | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errorKey, setErrorKey] = useState("errorGeneric");
   const [lastQuery, setLastQuery] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshFailed, setRefreshFailed] = useState(false);
   const restoredLastCity = useRef(false);
 
   useEffect(() => {
@@ -59,27 +53,33 @@ export default function App() {
         return [selected, ...withoutDup].slice(0, MAX_RECENT);
       });
     },
-    [setRecent],
+    [setRecent]
   );
+
+  const failWith = useCallback((key: string) => {
+    setErrorKey(key);
+    setStatus("error");
+  }, []);
+
+  const failNetwork = useCallback(() => {
+    failWith(navigator.onLine ? "errorGeneric" : "errorOffline");
+  }, [failWith]);
 
   const loadWeatherFor = useCallback(
     async (selected: GeoResult) => {
       setCity(selected);
+      setRefreshFailed(false);
       setStatus("loading");
       try {
-        const data = await fetchWeatherBundle(
-          selected.latitude,
-          selected.longitude,
-        );
+        const data = await fetchWeatherBundle(selected.latitude, selected.longitude);
         setBundle(data);
         setStatus("success");
         if (selected.id !== CURRENT_LOCATION_ID) rememberCity(selected);
       } catch {
-        setErrorKey("errorGeneric");
-        setStatus("error");
+        failNetwork();
       }
     },
-    [rememberCity],
+    [rememberCity, failNetwork]
   );
 
   useEffect(() => {
@@ -95,24 +95,21 @@ export default function App() {
       try {
         const results = await searchCities(query, lang);
         if (results.length === 0) {
-          setErrorKey("errorNotFound");
-          setStatus("error");
+          failWith("errorNotFound");
           return;
         }
         await loadWeatherFor(results[0]);
       } catch {
-        setErrorKey("errorGeneric");
-        setStatus("error");
+        failNetwork();
       }
     },
-    [lang, loadWeatherFor],
+    [lang, loadWeatherFor, failWith, failNetwork]
   );
 
   const handleLocate = useCallback(() => {
     setLastQuery(null);
     if (!navigator.geolocation) {
-      setErrorKey("errorLocation");
-      setStatus("error");
+      failWith("errorLocation");
       return;
     }
     setStatus("loading");
@@ -124,31 +121,35 @@ export default function App() {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
         }),
-      () => {
-        setErrorKey("errorLocation");
-        setStatus("error");
-      },
-      { timeout: 10000 },
+      (err) => failWith(err.code === err.PERMISSION_DENIED ? "errorLocationDenied" : "errorLocation"),
+      { timeout: 10000 }
     );
-  }, [lang, loadWeatherFor]);
+  }, [lang, loadWeatherFor, failWith]);
 
   const toggleFavorite = useCallback(
     (target: GeoResult) => {
       setFavorites((prev) =>
-        prev.some((c) => c.id === target.id)
-          ? prev.filter((c) => c.id !== target.id)
-          : [target, ...prev],
+        prev.some((c) => c.id === target.id) ? prev.filter((c) => c.id !== target.id) : [target, ...prev]
       );
     },
-    [setFavorites],
+    [setFavorites]
   );
 
-  const refresh = () => {
-    if (city) void loadWeatherFor(city);
-  };
+  const refresh = useCallback(async () => {
+    if (!city || refreshing) return;
+    setRefreshing(true);
+    setRefreshFailed(false);
+    try {
+      setBundle(await fetchWeatherBundle(city.latitude, city.longitude));
+    } catch {
+      setRefreshFailed(true);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [city, refreshing]);
 
   const retry = () => {
-    if (errorKey === "errorLocation") handleLocate();
+    if (errorKey === "errorLocation" || errorKey === "errorLocationDenied") handleLocate();
     else if (lastQuery) void handleManualSearch(lastQuery);
     else if (city) void loadWeatherFor(city);
   };
@@ -164,25 +165,11 @@ export default function App() {
   const sections: NavSection[] =
     status === "success" && bundle
       ? [
-          {
-            id: "overview",
-            labelKey: "navOverview",
-            shortKey: "navShortOverview",
-          },
+          { id: "overview", labelKey: "navOverview", shortKey: "navShortOverview" },
           { id: "hourly", labelKey: "navHourly", shortKey: "navShortHourly" },
-          {
-            id: "forecast",
-            labelKey: "navForecast",
-            shortKey: "navShortForecast",
-          },
-          ...(bundle.air
-            ? [{ id: "air", labelKey: "navAir", shortKey: "navShortAir" }]
-            : []),
-          {
-            id: "details",
-            labelKey: "navDetails",
-            shortKey: "navShortDetails",
-          },
+          { id: "forecast", labelKey: "navForecast", shortKey: "navShortForecast" },
+          ...(bundle.air ? [{ id: "air", labelKey: "navAir", shortKey: "navShortAir" }] : []),
+          { id: "details", labelKey: "navDetails", shortKey: "navShortDetails" },
           { id: "sun", labelKey: "navSun", shortKey: "navShortSun" },
         ]
       : [];
@@ -192,20 +179,17 @@ export default function App() {
   const stagger = (index: number) => ({ animationDelay: `${index * 80}ms` });
 
   return (
-    <div
-      className={`min-h-screen ${fontClass} text-paper relative overflow-x-clip`}
-    >
-      <div
-        aria-hidden
-        className="fixed inset-0 overflow-hidden bg-ink pointer-events-none"
+    <div className={`min-h-screen ${fontClass} text-paper relative overflow-x-clip`}>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-50 focus:rounded-full focus:bg-gold-soft focus:px-5 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-ink"
       >
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-all duration-700`}
-        />
-        <AmbientOrbs
-          group={meta?.group ?? "idle"}
-          isDay={bundle?.current.isDay ?? true}
-        />
+        {t(lang, "skipToContent")}
+      </a>
+
+      <div aria-hidden className="fixed inset-0 overflow-hidden bg-ink pointer-events-none">
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-all duration-700`} />
+        <AmbientOrbs group={meta?.group ?? "idle"} isDay={bundle?.current.isDay ?? true} />
         <ParticleLayer group={meta?.group ?? "clear"} />
         <div className="vignette absolute inset-0" />
         <div className="grain absolute inset-0" />
@@ -222,7 +206,11 @@ export default function App() {
         onUnitChange={setUnit}
       />
 
-      <main className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 pt-8 sm:pt-12">
+      <main id="main" tabIndex={-1} className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 pt-8 sm:pt-12 outline-none">
+        <p role="status" className="sr-only">
+          {status === "loading" ? t(lang, "loadingWeather") : ""}
+        </p>
+
         <SearchCommand
           lang={lang}
           fontClass={fontClass}
@@ -235,34 +223,36 @@ export default function App() {
         />
 
         {status === "idle" && (
-          <EmptyState
-            lang={lang}
-            displayFont={displayFont}
-            onPick={handleManualSearch}
-            onLocate={handleLocate}
-          />
+          <EmptyState lang={lang} displayFont={displayFont} onPick={handleManualSearch} onLocate={handleLocate} />
         )}
 
         {status === "loading" && (
-          <>
+          <div aria-busy="true">
             <HeroSkeleton />
             <StripSkeleton />
             <ListSkeleton />
             <GridSkeleton />
-          </>
+          </div>
         )}
 
         {status === "error" && (
-          <div className="glass glass-danger rounded-[32px] px-6 py-10 text-center animate-rise-in">
-            <p className="text-paper mb-5">{t(lang, errorKey)}</p>
-            <Button variant="destructive" size="sm" onClick={retry}>
-              {t(lang, "retry")}
-            </Button>
+          <div role="alert" className="glass glass-danger rounded-[32px] px-6 py-10 text-center animate-rise-in">
+            <p className="text-paper leading-7 max-w-md mx-auto">{t(lang, errorKey)}</p>
+            {errorKey !== "errorNotFound" && (
+              <Button variant="destructive" size="sm" className="mt-5" onClick={retry}>
+                {t(lang, "retry")}
+              </Button>
+            )}
           </div>
         )}
 
         {status === "success" && bundle && city && (
           <>
+            {refreshFailed && (
+              <p role="alert" className="glass glass-danger rounded-2xl px-4 py-3 text-sm mb-4">
+                {t(lang, "errorRefresh")}
+              </p>
+            )}
             <div className="animate-rise-in">
               <Hero
                 lang={lang}
@@ -273,44 +263,26 @@ export default function App() {
                 today={bundle.daily[0]}
                 isFavorite={favorites.some((c) => c.id === city.id)}
                 onToggleFavorite={() => toggleFavorite(city)}
-                onRefresh={refresh}
+                refreshing={refreshing}
+                onRefresh={() => void refresh()}
               />
             </div>
             <div className="animate-rise-in" style={stagger(1)}>
               <Briefing
                 lang={lang}
                 displayFont={displayFont}
-                insights={buildInsights(
-                  bundle.current,
-                  bundle.daily[0],
-                  bundle.hourly,
-                  bundle.air,
-                )}
+                insights={buildInsights(bundle.current, bundle.daily[0], bundle.hourly, bundle.air)}
               />
             </div>
             <div className="animate-rise-in" style={stagger(2)}>
-              <HourlyStrip
-                lang={lang}
-                unit={unit}
-                displayFont={displayFont}
-                hours={bundle.hourly}
-              />
+              <HourlyStrip lang={lang} unit={unit} displayFont={displayFont} hours={bundle.hourly} />
             </div>
             <div className="animate-rise-in" style={stagger(3)}>
-              <DailyForecast
-                lang={lang}
-                unit={unit}
-                displayFont={displayFont}
-                days={bundle.daily}
-              />
+              <DailyForecast lang={lang} unit={unit} displayFont={displayFont} days={bundle.daily} />
             </div>
             {bundle.air && (
               <div className="animate-rise-in" style={stagger(4)}>
-                <AirQuality
-                  lang={lang}
-                  displayFont={displayFont}
-                  air={bundle.air}
-                />
+                <AirQuality lang={lang} displayFont={displayFont} air={bundle.air} />
               </div>
             )}
             <div className="animate-rise-in" style={stagger(5)}>
@@ -335,7 +307,7 @@ export default function App() {
         )}
       </main>
 
-      <Footer lang={lang} displayFont={displayFont} />
+      <Footer lang={lang} displayFont={displayFont} ready={status !== "loading"} />
       <MobileNav lang={lang} sections={sections} active={activeSection} />
     </div>
   );

@@ -52,6 +52,7 @@ export function useDragScroll<T extends HTMLElement>() {
       if (!moved) return;
       el.releasePointerCapture(e.pointerId);
       el.classList.remove("is-dragging");
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       let step = velocity * 16;
       const glide = () => {
         el.scrollLeft -= step;

@@ -20,39 +20,20 @@ interface HeaderProps {
   onUnitChange: (unit: Unit) => void;
 }
 
-export function Header({
-  lang,
-  unit,
-  fontClass,
-  displayFont,
-  sections,
-  active,
-  onLangChange,
-  onUnitChange,
-}: HeaderProps) {
+export function Header({ lang, unit, fontClass, displayFont, sections, active, onLangChange, onUnitChange }: HeaderProps) {
+
   return (
-    <header className="sticky top-0 z-30 border-b border-gold/15 bg-ink/50 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-gold/15 bg-ink/70 backdrop-blur-xl">
       <div className="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
-        <a
-          href="#overview"
-          className="flex items-center gap-3 shrink-0"
-          aria-label={t(lang, "brand")}
-        >
+        <a href="#overview" className="flex items-center gap-3 shrink-0" aria-label={t(lang, "brand")}>
           <svg viewBox="0 0 40 40" className="w-9 h-9 shrink-0">
             <defs>
-              <linearGradient id="brandGold" x1="0" y1="0" x2="1" y2="1">
+              <linearGradient id="brandGold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="40" y2="40">
                 <stop offset="0" stopColor="#F3E3B8" />
                 <stop offset="1" stopColor="#A8863F" />
               </linearGradient>
             </defs>
-            <circle
-              cx="20"
-              cy="20"
-              r="18.5"
-              fill="none"
-              stroke="url(#brandGold)"
-              strokeWidth="1"
-            />
+            <circle cx="20" cy="20" r="18.5" fill="none" stroke="url(#brandGold)" strokeWidth="1" />
             <circle cx="20" cy="20" r="5.5" fill="url(#brandGold)" />
             {Array.from({ length: 8 }).map((_, i) => {
               const a = (i * Math.PI) / 4;
@@ -75,31 +56,24 @@ export function Header({
               className={cn(
                 displayFont,
                 "text-xl font-semibold",
-                lang === "en" && "uppercase tracking-[0.22em]",
+                lang === "en" && "uppercase tracking-[0.22em]"
               )}
             >
               {t(lang, "brand")}
             </p>
-            <p className="hidden sm:block text-mist text-xs">
-              {t(lang, "tagline")}
-            </p>
+            <p className="hidden sm:block text-mist text-xs">{t(lang, "tagline")}</p>
           </div>
         </a>
 
         {sections.length > 0 && (
-          <nav
-            aria-label={t(lang, "navLabel")}
-            className="hidden lg:flex items-center gap-1"
-          >
+          <nav aria-label={t(lang, "navLabel")} className="hidden lg:flex items-center gap-1">
             {sections.map((s) => (
               <a
                 key={s.id}
                 href={`#${s.id}`}
                 className={cn(
                   "rounded-full px-3 py-1.5 text-[13px] transition-colors",
-                  active === s.id
-                    ? "bg-gold/15 text-gold-soft"
-                    : "text-mist hover:text-paper",
+                  active === s.id ? "bg-gold/15 text-gold-soft" : "text-mist hover:text-paper"
                 )}
               >
                 {t(lang, s.labelKey)}

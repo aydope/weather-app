@@ -12,6 +12,15 @@ export const dict: Record<Lang, Record<string, string>> = {
     navDetails: "جزئیات",
     navSun: "خورشید و ماه",
     navLabel: "بخش‌های صفحه",
+    skipToContent: "رفتن به محتوا",
+    loadingWeather: "در حال دریافت اطلاعات هوا",
+    noResults: "شهری پیدا نشد",
+    resultsLabel: "نتیجه",
+    errorOffline: "اتصال اینترنت برقرار نیست. اتصال را بررسی و دوباره تلاش کنید.",
+    errorLocationDenied: "دسترسی به موقعیت مکانی مسدود است. آن را در تنظیمات مرورگر مجاز کنید یا نام شهر را جستجو کنید.",
+    errorRefresh: "به‌روزرسانی انجام نشد. آخرین داده‌های موجود نمایش داده می‌شود.",
+    chartLow: "کمترین",
+    chartHigh: "بیشترین",
     navShortOverview: "اکنون",
     navShortHourly: "ساعتی",
     navShortForecast: "روزانه",
@@ -33,8 +42,7 @@ export const dict: Record<Lang, Record<string, string>> = {
 
     errorNotFound: "شهری با این نام پیدا نشد. املا را بررسی کنید.",
     errorGeneric: "ارتباط برقرار نشد. لطفاً دوباره تلاش کنید.",
-    errorLocation:
-      "دسترسی به موقعیت مکانی ممکن نشد. اجازه مرورگر را بررسی کنید.",
+    errorLocation: "دسترسی به موقعیت مکانی ممکن نشد. اجازه مرورگر را بررسی کنید.",
     retry: "تلاش دوباره",
 
     emptyTitle: "آسمان امروز را کشف کنید",
@@ -49,10 +57,8 @@ export const dict: Record<Lang, Record<string, string>> = {
     briefingTitle: "گزارش امروز",
     tipUmbrella: "احتمال بارش بالاست. چتر همراه داشته باشید.",
     tipDry: "بارشی در پیش نیست. روز مناسبی برای فعالیت در فضای باز است.",
-    tipUvHigh:
-      "اشعه فرابنفش زیاد است. از کرم ضدآفتاب و عینک آفتابی استفاده کنید.",
-    tipUvModerate:
-      "اشعه فرابنفش متوسط است. برای حضور طولانی در آفتاب ضدآفتاب بزنید.",
+    tipUvHigh: "اشعه فرابنفش زیاد است. از کرم ضدآفتاب و عینک آفتابی استفاده کنید.",
+    tipUvModerate: "اشعه فرابنفش متوسط است. برای حضور طولانی در آفتاب ضدآفتاب بزنید.",
     tipDressHeavy: "هوا بسیار سرد است. لباس گرم و چندلایه بپوشید.",
     tipDressWarm: "هوا سرد است. کت یا لباس گرم بپوشید.",
     tipDressLayers: "هوا خنک است. یک لایه اضافه همراه داشته باشید.",
@@ -77,12 +83,9 @@ export const dict: Record<Lang, Record<string, string>> = {
     aqiVeryUnhealthy: "بسیار ناسالم",
     aqiHazardous: "خطرناک",
     aqiNoteGood: "هوا پاک است و محدودیتی برای فعالیت بیرون نیست.",
-    aqiNoteModerate:
-      "قابل قبول است. افراد بسیار حساس ممکن است احساس ناراحتی کنند.",
-    aqiNoteSensitive:
-      "کودکان، سالمندان و بیماران تنفسی فعالیت بیرون را محدود کنند.",
-    aqiNoteUnhealthy:
-      "همه ممکن است تأثیر بگیرند. فعالیت سنگین بیرون را کم کنید.",
+    aqiNoteModerate: "قابل قبول است. افراد بسیار حساس ممکن است احساس ناراحتی کنند.",
+    aqiNoteSensitive: "کودکان، سالمندان و بیماران تنفسی فعالیت بیرون را محدود کنند.",
+    aqiNoteUnhealthy: "همه ممکن است تأثیر بگیرند. فعالیت سنگین بیرون را کم کنید.",
     aqiNoteVeryUnhealthy: "هشدار سلامت: بهتر است در فضای بسته بمانید.",
     aqiNoteHazardous: "وضعیت اضطراری: از خروج غیرضروری خودداری کنید.",
     pollutants: "آلاینده‌ها",
@@ -114,8 +117,7 @@ export const dict: Record<Lang, Record<string, string>> = {
     moonLastQuarter: "تربیع آخر",
     moonWaningCrescent: "هلال کاهشی",
 
-    footerBlurb:
-      "پروژه‌ای متن‌باز. پیشنهاد، گزارش مشکل و بهبود کد از طرف شما خوشحالمان می‌کند.",
+    footerBlurb: "پروژه‌ای متن‌باز. پیشنهاد، گزارش مشکل و بهبود کد از طرف شما خوشحالمان می‌کند.",
     starOnGithub: "ستاره در گیت‌هاب",
     contribute: "مشارکت",
     backToTop: "بازگشت به بالا",
@@ -132,6 +134,15 @@ export const dict: Record<Lang, Record<string, string>> = {
     navDetails: "Details",
     navSun: "Sun and moon",
     navLabel: "Page sections",
+    skipToContent: "Skip to content",
+    loadingWeather: "Loading weather",
+    noResults: "No cities found",
+    resultsLabel: "results",
+    errorOffline: "You appear to be offline. Check your connection and try again.",
+    errorLocationDenied: "Location access is blocked. Allow it in your browser settings, or search for a city.",
+    errorRefresh: "Couldn't refresh. Showing the last data we have.",
+    chartLow: "Lowest",
+    chartHigh: "Highest",
     navShortOverview: "Now",
     navShortHourly: "Hourly",
     navShortForecast: "Daily",
@@ -195,10 +206,8 @@ export const dict: Record<Lang, Record<string, string>> = {
     aqiHazardous: "Hazardous",
     aqiNoteGood: "Clean air. No limits on outdoor activity.",
     aqiNoteModerate: "Acceptable. Very sensitive people may notice effects.",
-    aqiNoteSensitive:
-      "Children, older adults and people with respiratory conditions should limit time outside.",
-    aqiNoteUnhealthy:
-      "Everyone may be affected. Reduce heavy outdoor exertion.",
+    aqiNoteSensitive: "Children, older adults and people with respiratory conditions should limit time outside.",
+    aqiNoteUnhealthy: "Everyone may be affected. Reduce heavy outdoor exertion.",
     aqiNoteVeryUnhealthy: "Health alert: stay indoors where possible.",
     aqiNoteHazardous: "Emergency conditions: avoid going outside.",
     pollutants: "Pollutants",
@@ -230,8 +239,7 @@ export const dict: Record<Lang, Record<string, string>> = {
     moonLastQuarter: "Last quarter",
     moonWaningCrescent: "Waning crescent",
 
-    footerBlurb:
-      "An open source project. Ideas, bug reports and pull requests are welcome.",
+    footerBlurb: "An open source project. Ideas, bug reports and pull requests are welcome.",
     starOnGithub: "Star on GitHub",
     contribute: "Contribute",
     backToTop: "Back to top",

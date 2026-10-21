@@ -18,44 +18,21 @@ const dayPalettes: Record<string, Palette> = {
 const nightPalette: Palette = ["#3E34A0", "#1F3A8A", "#8B6FC0"];
 
 export function AmbientOrbs({ group, isDay }: AmbientOrbsProps) {
-  const [a, b, c] = isDay
-    ? (dayPalettes[group] ?? dayPalettes.cloud)
-    : nightPalette;
+  const [a, b, c] = isDay ? (dayPalettes[group] ?? dayPalettes.cloud) : nightPalette;
 
   return (
-    <div
-      aria-hidden
-      className="absolute inset-0 overflow-hidden pointer-events-none"
-    >
+    <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
       <span
         className="orb animate-orb-a"
-        style={{
-          top: "-12%",
-          left: "-8%",
-          width: "48vmax",
-          height: "48vmax",
-          backgroundColor: a,
-        }}
+        style={{ top: "-12%", left: "-8%", width: "48vmax", height: "48vmax", backgroundColor: a }}
       />
       <span
         className="orb animate-orb-b"
-        style={{
-          top: "28%",
-          right: "-14%",
-          width: "42vmax",
-          height: "42vmax",
-          backgroundColor: b,
-        }}
+        style={{ top: "28%", right: "-14%", width: "42vmax", height: "42vmax", backgroundColor: b }}
       />
       <span
         className="orb animate-orb-c"
-        style={{
-          bottom: "-18%",
-          left: "18%",
-          width: "44vmax",
-          height: "44vmax",
-          backgroundColor: c,
-        }}
+        style={{ bottom: "-18%", left: "18%", width: "44vmax", height: "44vmax", backgroundColor: c }}
       />
     </div>
   );

@@ -26,20 +26,8 @@ export function MoonDisc({ fraction, className }: MoonDiscProps) {
           <stop offset="1" stopColor="#CDBF98" />
         </radialGradient>
       </defs>
-      <circle
-        cx={CENTER}
-        cy={CENTER}
-        r={RADIUS + 6}
-        fill="none"
-        stroke="rgba(236,216,172,0.15)"
-      />
-      <circle
-        cx={CENTER}
-        cy={CENTER}
-        r={RADIUS}
-        fill="rgba(255,246,228,0.06)"
-        stroke="rgba(236,216,172,0.3)"
-      />
+      <circle cx={CENTER} cy={CENTER} r={RADIUS + 6} fill="none" stroke="rgba(236,216,172,0.15)" />
+      <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="rgba(255,246,228,0.06)" stroke="rgba(236,216,172,0.3)" />
       <path d={litPath(fraction)} fill="url(#moonLit)" />
     </svg>
   );

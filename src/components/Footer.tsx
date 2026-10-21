@@ -10,6 +10,7 @@ import { t } from "@/i18n";
 interface FooterProps {
   lang: Lang;
   displayFont: string;
+  ready: boolean;
 }
 
 function formatStars(count: number): string {
@@ -18,11 +19,14 @@ function formatStars(count: number): string {
     : String(count);
 }
 
-export function Footer({ lang, displayFont }: FooterProps) {
-  const stars = useGithubStars(REPO);
+export function Footer({ lang, displayFont, ready }: FooterProps) {
+  const { stars, ref } = useGithubStars<HTMLElement>(REPO, ready);
 
   return (
-    <footer className="relative z-10 mt-16 sm:mt-20 border-t border-gold/15 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
+    <footer
+      ref={ref}
+      className="relative z-10 mt-16 sm:mt-20 border-t border-gold/15 lg:pb-0"
+    >
       <div className="max-w-5xl mx-auto px-5 sm:px-8 py-12 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
         <div className="max-w-md">
           <p

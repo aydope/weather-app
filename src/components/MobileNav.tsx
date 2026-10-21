@@ -38,24 +38,17 @@ export function MobileNav({ lang, sections, active }: MobileNavProps) {
                 aria-current={isActive ? "true" : undefined}
                 className={cn(
                   "relative flex flex-col items-center gap-1.5 rounded-[20px] px-1 pt-2.5 pb-2 transition-colors",
-                  isActive
-                    ? "bg-gold/15 text-gold-soft"
-                    : "text-mist hover:text-paper",
+                  isActive ? "bg-gold/15 text-gold-soft" : "text-mist hover:text-paper"
                 )}
               >
                 <span
                   className={cn(
                     "absolute top-0 h-0.5 w-5 rounded-full bg-gold transition-opacity",
-                    isActive ? "opacity-100" : "opacity-0",
+                    isActive ? "opacity-100" : "opacity-0"
                   )}
                 />
-                <Icon
-                  name={icons[s.id] ?? "pin"}
-                  className="w-5 h-5 shrink-0"
-                />
-                <span className="max-w-full truncate text-[10px] leading-none">
-                  {t(lang, s.shortKey)}
-                </span>
+                <Icon name={icons[s.id] ?? "pin"} className="w-5 h-5 shrink-0" />
+                <span className="max-w-full truncate text-[11px] leading-none">{t(lang, s.shortKey)}</span>
               </a>
             </li>
           );

@@ -13,10 +13,7 @@ interface AirQualityProps {
 const GAUGE_RADIUS = 80;
 const GAUGE_MAX_AQI = 300;
 
-const pollutants: {
-  key: keyof Omit<AirQualityData, "usAqi">;
-  label: string;
-}[] = [
+const pollutants: { key: keyof Omit<AirQualityData, "usAqi">; label: string }[] = [
   { key: "pm25", label: "PM2.5" },
   { key: "pm10", label: "PM10" },
   { key: "no2", label: "NO2" },
@@ -27,14 +24,8 @@ const pollutants: {
 
 export function AirQuality({ lang, displayFont, air }: AirQualityProps) {
   const category = aqiCategory(air.usAqi);
-  const label = t(
-    lang,
-    `aqi${category.key.charAt(0).toUpperCase()}${category.key.slice(1)}`,
-  );
-  const note = t(
-    lang,
-    `aqiNote${category.key.charAt(0).toUpperCase()}${category.key.slice(1)}`,
-  );
+  const label = t(lang, `aqi${category.key.charAt(0).toUpperCase()}${category.key.slice(1)}`);
+  const note = t(lang, `aqiNote${category.key.charAt(0).toUpperCase()}${category.key.slice(1)}`);
 
   const fraction = Math.min(1, air.usAqi / GAUGE_MAX_AQI);
   const angle = Math.PI - fraction * Math.PI;
@@ -45,8 +36,9 @@ export function AirQuality({ lang, displayFont, air }: AirQualityProps) {
   const arc = `M ${100 - GAUGE_RADIUS} 100 A ${GAUGE_RADIUS} ${GAUGE_RADIUS} 0 0 1 ${100 + GAUGE_RADIUS} 100`;
 
   return (
-    <section id="air" className="mt-12 sm:mt-16 scroll-mt-24">
+    <section id="air" aria-labelledby="air-title" className="mt-12 sm:mt-16 scroll-mt-24">
       <SectionTitle
+        id="air-title"
         title={t(lang, "airTitle")}
         displayFont={displayFont}
         aside={<span className="text-xs text-mist shrink-0">US AQI</span>}
@@ -65,14 +57,7 @@ export function AirQuality({ lang, displayFont, air }: AirQualityProps) {
                   <stop offset="1" stopColor="#A33A5A" />
                 </linearGradient>
               </defs>
-              <path
-                d={arc}
-                stroke="url(#aqiGradient)"
-                strokeOpacity="0.28"
-                strokeWidth="10"
-                fill="none"
-                strokeLinecap="round"
-              />
+              <path d={arc} stroke="url(#aqiGradient)" strokeOpacity="0.28" strokeWidth="10" fill="none" strokeLinecap="round" />
               <path
                 d={arc}
                 stroke="url(#aqiGradient)"
@@ -82,36 +67,15 @@ export function AirQuality({ lang, displayFont, air }: AirQualityProps) {
                 pathLength="100"
                 strokeDasharray={`${Math.max(fraction * 100, 1)} 100`}
               />
-              <circle
-                cx={marker.x}
-                cy={marker.y}
-                r="9"
-                fill={category.color}
-                opacity="0.25"
-              />
-              <circle
-                cx={marker.x}
-                cy={marker.y}
-                r="5"
-                fill="#07080C"
-                stroke={category.color}
-                strokeWidth="2.5"
-              />
+              <circle cx={marker.x} cy={marker.y} r="9" fill={category.color} opacity="0.25" />
+              <circle cx={marker.x} cy={marker.y} r="5" fill="#07080C" stroke={category.color} strokeWidth="2.5" />
             </svg>
-            <p
-              className={`${displayFont} absolute inset-x-0 bottom-0 text-5xl font-light leading-none`}
-            >
+            <p className={`${displayFont} absolute inset-x-0 bottom-0 text-5xl font-light leading-none`}>
               {localizeDigits(air.usAqi, lang)}
             </p>
           </div>
-          <p
-            className="mt-5 flex items-center gap-2 text-base"
-            style={{ color: category.color }}
-          >
-            <span
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: category.color }}
-            />
+          <p className="mt-5 flex items-center gap-2 text-base" style={{ color: category.color }}>
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: category.color }} />
             {label}
           </p>
           <p className="text-mist text-sm leading-7 mt-2 max-w-xs">{note}</p>
@@ -128,9 +92,7 @@ export function AirQuality({ lang, displayFont, air }: AirQualityProps) {
                   {p.label}
                 </p>
                 <p className={`${displayFont} text-2xl mt-2`}>
-                  {air[p.key] === null
-                    ? "-"
-                    : localizeDigits(air[p.key] as number, lang)}
+                  {air[p.key] === null ? "-" : localizeDigits(air[p.key] as number, lang)}
                 </p>
               </div>
             ))}

@@ -13,20 +13,11 @@ interface SegmentedProps {
   fontClass?: string;
 }
 
-export function Segmented({
-  options,
-  value,
-  onChange,
-  className,
-  fontClass,
-}: SegmentedProps) {
+export function Segmented({ options, value, onChange, className, fontClass }: SegmentedProps) {
   return (
     <div
       role="tablist"
-      className={cn(
-        "glass-pill inline-flex h-10 items-center rounded-full p-1 gap-0.5",
-        className,
-      )}
+      className={cn("glass-pill inline-flex h-11 items-center rounded-full p-1 gap-0.5", className)}
     >
       {options.map((opt) => {
         const active = opt.value === value;
@@ -37,11 +28,11 @@ export function Segmented({
             aria-selected={active}
             onClick={() => onChange(opt.value)}
             className={cn(
-              "h-8 min-w-[2.25rem] sm:min-w-[2.75rem] rounded-full px-2.5 sm:px-3 text-sm transition-colors",
+              "h-9 min-w-[2.25rem] sm:min-w-[2.75rem] rounded-full px-2.5 sm:px-3 text-sm transition-colors",
               fontClass,
               active
                 ? "bg-gradient-to-b from-gold-soft to-gold-deep text-ink font-semibold shadow-[0_4px_14px_-4px_rgba(217,185,121,0.6)]"
-                : "text-mist hover:text-paper",
+                : "text-mist hover:text-paper"
             )}
           >
             {opt.label}

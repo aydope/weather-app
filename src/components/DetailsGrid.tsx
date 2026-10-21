@@ -3,12 +3,7 @@ import { WindCompass } from "@/components/WindCompass";
 import { UvGauge } from "@/components/UvGauge";
 import { Icon, type IconName } from "@/components/ui/icons";
 import { SectionTitle } from "@/components/ui/section-title";
-import {
-  formatPrecip,
-  formatTemp,
-  formatVisibility,
-  localizeDigits,
-} from "@/lib/format";
+import { formatPrecip, formatTemp, formatVisibility, localizeDigits } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { CurrentWeather, DayPoint, Lang, Unit } from "@/types";
 import { t } from "@/i18n";
@@ -30,12 +25,7 @@ interface DetailCardProps {
 
 function DetailCard({ icon, label, className, children }: DetailCardProps) {
   return (
-    <div
-      className={cn(
-        "glass glass-hover rounded-3xl p-4 sm:p-5 flex flex-col gap-4",
-        className,
-      )}
-    >
+    <div className={cn("glass rounded-3xl p-4 sm:p-5 flex flex-col gap-4", className)}>
       <p className="flex items-center gap-2 text-mist text-xs sm:text-sm">
         <Icon name={icon} className="w-4 h-4 text-gold shrink-0" />
         {label}
@@ -56,24 +46,14 @@ function Meter({ value }: { value: number }) {
   );
 }
 
-export function DetailsGrid({
-  lang,
-  unit,
-  displayFont,
-  weather,
-  today,
-}: DetailsGridProps) {
+export function DetailsGrid({ lang, unit, displayFont, weather, today }: DetailsGridProps) {
   const valueClass = `${displayFont} text-xl sm:text-3xl`;
 
   return (
-    <section id="details" className="mt-12 sm:mt-16 scroll-mt-24">
-      <SectionTitle title={t(lang, "detailsTitle")} displayFont={displayFont} />
+    <section id="details" aria-labelledby="details-title" className="mt-12 sm:mt-16 scroll-mt-24">
+      <SectionTitle id="details-title" title={t(lang, "detailsTitle")} displayFont={displayFont} />
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 sm:gap-4">
-        <DetailCard
-          icon="wind"
-          label={t(lang, "wind")}
-          className="col-span-2 md:col-span-3"
-        >
+        <DetailCard icon="wind" label={t(lang, "wind")} className="col-span-2 md:col-span-3">
           <WindCompass
             lang={lang}
             unit={unit}
@@ -84,79 +64,37 @@ export function DetailsGrid({
           />
         </DetailCard>
 
-        <DetailCard
-          icon="sun"
-          label={t(lang, "uv")}
-          className="col-span-2 md:col-span-3"
-        >
-          <UvGauge
-            lang={lang}
-            displayFont={displayFont}
-            uv={today.uvIndexMax}
-          />
+        <DetailCard icon="sun" label={t(lang, "uv")} className="col-span-2 md:col-span-3">
+          <UvGauge lang={lang} displayFont={displayFont} uv={today.uvIndexMax} />
         </DetailCard>
 
-        <DetailCard
-          icon="drop"
-          label={t(lang, "humidity")}
-          className="md:col-span-2"
-        >
-          <p className={valueClass}>
-            {localizeDigits(weather.humidity, lang)}%
-          </p>
+        <DetailCard icon="drop" label={t(lang, "humidity")} className="md:col-span-2">
+          <p className={valueClass}>{localizeDigits(weather.humidity, lang)}%</p>
           <Meter value={weather.humidity} />
         </DetailCard>
 
-        <DetailCard
-          icon="gauge"
-          label={t(lang, "pressure")}
-          className="md:col-span-2"
-        >
+        <DetailCard icon="gauge" label={t(lang, "pressure")} className="md:col-span-2">
           <p className={valueClass}>
             {localizeDigits(weather.pressure, lang)}
             <span className="text-sm text-mist ms-1 font-body">hPa</span>
           </p>
         </DetailCard>
 
-        <DetailCard
-          icon="eye"
-          label={t(lang, "visibility")}
-          className="md:col-span-2"
-        >
-          <p className={valueClass}>
-            {formatVisibility(weather.visibility, unit, lang)}
-          </p>
+        <DetailCard icon="eye" label={t(lang, "visibility")} className="md:col-span-2">
+          <p className={valueClass}>{formatVisibility(weather.visibility, unit, lang)}</p>
         </DetailCard>
 
-        <DetailCard
-          icon="cloud"
-          label={t(lang, "cloudCover")}
-          className="md:col-span-2"
-        >
-          <p className={valueClass}>
-            {localizeDigits(weather.cloudCover, lang)}%
-          </p>
+        <DetailCard icon="cloud" label={t(lang, "cloudCover")} className="md:col-span-2">
+          <p className={valueClass}>{localizeDigits(weather.cloudCover, lang)}%</p>
           <Meter value={weather.cloudCover} />
         </DetailCard>
 
-        <DetailCard
-          icon="thermometer"
-          label={t(lang, "dewPoint")}
-          className="md:col-span-2"
-        >
-          <p className={valueClass}>
-            {formatTemp(weather.dewPoint, unit, lang)}
-          </p>
+        <DetailCard icon="thermometer" label={t(lang, "dewPoint")} className="md:col-span-2">
+          <p className={valueClass}>{formatTemp(weather.dewPoint, unit, lang)}</p>
         </DetailCard>
 
-        <DetailCard
-          icon="umbrella"
-          label={t(lang, "precipitation")}
-          className="md:col-span-2"
-        >
-          <p className={valueClass}>
-            {formatPrecip(today.precipSum, unit, lang)}
-          </p>
+        <DetailCard icon="umbrella" label={t(lang, "precipitation")} className="md:col-span-2">
+          <p className={valueClass}>{formatPrecip(today.precipSum, unit, lang)}</p>
         </DetailCard>
       </div>
     </section>

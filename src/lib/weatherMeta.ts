@@ -27,11 +27,7 @@ const codeMap: Record<string, CodeEntry> = {
   "82": { fa: "رگبار شدید", en: "Violent showers", group: "rain" },
   "95": { fa: "رعد و برق", en: "Thunderstorm", group: "storm" },
   "96": { fa: "رعد و برق با تگرگ", en: "Thunderstorm, hail", group: "storm" },
-  "99": {
-    fa: "رعد و برق شدید با تگرگ",
-    en: "Severe thunderstorm",
-    group: "storm",
-  },
+  "99": { fa: "رعد و برق شدید با تگرگ", en: "Severe thunderstorm", group: "storm" },
 };
 
 export function weatherMeta(code: number, lang: Lang) {

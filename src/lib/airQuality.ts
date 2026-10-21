@@ -1,11 +1,5 @@
 export interface AqiCategory {
-  key:
-    | "good"
-    | "moderate"
-    | "sensitive"
-    | "unhealthy"
-    | "veryUnhealthy"
-    | "hazardous";
+  key: "good" | "moderate" | "sensitive" | "unhealthy" | "veryUnhealthy" | "hazardous";
   color: string;
 }
 

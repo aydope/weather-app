@@ -21,42 +21,18 @@ const popular = [
   { query: "New York", fa: "نیویورک", en: "New York" },
 ];
 
-export function EmptyState({
-  lang,
-  displayFont,
-  onPick,
-  onLocate,
-}: EmptyStateProps) {
+export function EmptyState({ lang, displayFont, onPick, onLocate }: EmptyStateProps) {
   return (
     <section className="glass glass-strong rounded-[32px] px-6 py-14 sm:py-20 text-center animate-rise-in overflow-hidden">
-      <svg
-        viewBox="0 0 120 120"
-        className="w-24 h-24 mx-auto mb-8"
-        fill="none"
-        aria-hidden="true"
-      >
+      <svg viewBox="0 0 120 120" className="w-24 h-24 mx-auto mb-8" fill="none" aria-hidden="true">
         <defs>
-          <linearGradient id="emptyGold" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="emptyGold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="120" y2="120">
             <stop offset="0" stopColor="#F3E3B8" />
             <stop offset="1" stopColor="#A8863F" />
           </linearGradient>
         </defs>
-        <circle
-          cx="60"
-          cy="60"
-          r="56"
-          stroke="url(#emptyGold)"
-          strokeWidth="0.8"
-          opacity="0.6"
-        />
-        <circle
-          cx="60"
-          cy="60"
-          r="44"
-          stroke="url(#emptyGold)"
-          strokeWidth="0.8"
-          opacity="0.4"
-        />
+        <circle cx="60" cy="60" r="56" stroke="url(#emptyGold)" strokeWidth="0.8" opacity="0.6" />
+        <circle cx="60" cy="60" r="44" stroke="url(#emptyGold)" strokeWidth="0.8" opacity="0.4" />
         <circle cx="60" cy="60" r="14" fill="url(#emptyGold)" />
         {Array.from({ length: 12 }).map((_, i) => {
           const a = (i * Math.PI) / 6;
@@ -75,12 +51,8 @@ export function EmptyState({
         })}
       </svg>
 
-      <h2 className={`${displayFont} text-3xl sm:text-5xl font-semibold mb-3`}>
-        {t(lang, "emptyTitle")}
-      </h2>
-      <p className="text-mist text-sm sm:text-base max-w-md mx-auto leading-7">
-        {t(lang, "emptyBody")}
-      </p>
+      <h1 className={`${displayFont} text-3xl sm:text-5xl font-semibold mb-3`}>{t(lang, "emptyTitle")}</h1>
+      <p className="text-mist text-sm sm:text-base max-w-md mx-auto leading-7">{t(lang, "emptyBody")}</p>
 
       <div className="mt-8 flex justify-center">
         <Button variant="outline" onClick={onLocate}>

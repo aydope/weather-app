@@ -16,7 +16,7 @@ export function useActiveSection(ids: string[]) {
           if (entry.isIntersecting) setActive(entry.target.id);
         }
       },
-      { rootMargin: "-35% 0px -55% 0px" },
+      { rootMargin: "-35% 0px -55% 0px" }
     );
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();

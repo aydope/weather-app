@@ -50,8 +50,7 @@ export function HourlyChart({ lang, unit, hours }: HourlyChartProps) {
   const span = Math.max(1, max - min);
   const last = hours.length - 1;
 
-  const xAt = (i: number) =>
-    PAD_X + ((rtl ? last - i : i) * (WIDTH - PAD_X * 2)) / last;
+  const xAt = (i: number) => PAD_X + ((rtl ? last - i : i) * (WIDTH - PAD_X * 2)) / last;
   const yAt = (v: number) => TOP + (1 - (v - min) / span) * CHART_HEIGHT;
 
   const points = temps.map((v, i) => ({ x: xAt(i), y: yAt(v) }));
@@ -73,13 +72,8 @@ export function HourlyChart({ lang, unit, hours }: HourlyChartProps) {
         </span>
       </div>
 
-      <div ref={dragRef} className="drag-scroll overflow-x-auto scroll-quiet">
-        <svg
-          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          className="w-full min-w-[640px]"
-          role="img"
-          aria-label={t(lang, "hourlyTitle")}
-        >
+      <div ref={dragRef} tabIndex={0} role="region" aria-label={t(lang, "chartTemp")} className="drag-scroll overflow-x-auto scroll-quiet">
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full min-w-[640px]" role="img" aria-label={`${t(lang, "hourlyTitle")}. ${t(lang, "chartLow")}: ${localizeDigits(min, lang)}°, ${t(lang, "chartHigh")}: ${localizeDigits(max, lang)}°`}>
           <defs>
             <linearGradient id="hourlyFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#D9B979" stopOpacity="0.38" />
@@ -104,13 +98,7 @@ export function HourlyChart({ lang, unit, hours }: HourlyChartProps) {
           ))}
 
           <path d={area} fill="url(#hourlyFill)" />
-          <path
-            d={line}
-            fill="none"
-            stroke="url(#hourlyLine)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
+          <path d={line} fill="none" stroke="url(#hourlyLine)" strokeWidth="2.5" strokeLinecap="round" />
 
           {points.map((p, i) => {
             const showLabel = i % 3 === 0 || i === peakIndex || i === lowIndex;
@@ -119,14 +107,7 @@ export function HourlyChart({ lang, unit, hours }: HourlyChartProps) {
               <g key={hours[i].time}>
                 {showLabel && (
                   <>
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={emphasised ? 4.5 : 3}
-                      fill="#07080C"
-                      stroke="#D9B979"
-                      strokeWidth="2"
-                    />
+                    <circle cx={p.x} cy={p.y} r={emphasised ? 4.5 : 3} fill="#07080C" stroke="#D9B979" strokeWidth="2" />
                     <text
                       x={p.x}
                       y={p.y - 12}
@@ -143,10 +124,7 @@ export function HourlyChart({ lang, unit, hours }: HourlyChartProps) {
           })}
 
           {hours.map((h, i) => {
-            const barHeight = Math.max(
-              2,
-              (h.precipProbability / 100) * RAIN_MAX_HEIGHT,
-            );
+            const barHeight = Math.max(2, (h.precipProbability / 100) * RAIN_MAX_HEIGHT);
             return (
               <rect
                 key={h.time}
@@ -162,17 +140,10 @@ export function HourlyChart({ lang, unit, hours }: HourlyChartProps) {
 
           {hours.map((h, i) =>
             i % 4 === 0 ? (
-              <text
-                key={h.time}
-                x={xAt(i)}
-                y={HEIGHT - 8}
-                textAnchor="middle"
-                fontSize="12"
-                className="fill-mist"
-              >
+              <text key={h.time} x={xAt(i)} y={HEIGHT - 8} textAnchor="middle" fontSize="12" className="fill-mist">
                 {i === 0 ? t(lang, "now") : formatHour(h.time, lang)}
               </text>
-            ) : null,
+            ) : null
           )}
         </svg>
       </div>
